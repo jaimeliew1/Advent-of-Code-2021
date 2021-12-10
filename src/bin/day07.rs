@@ -19,11 +19,11 @@ fn part1(data: &Vec<i32>) -> i32 {
 }
 
 fn part2(data: &Vec<i32>) -> i32 {
-    let mean = data.iter().fold(0, |acc, x| acc + x) / (data.len() as i32);
+    let mean = data.iter().sum::<i32>() / (data.len() as i32);
     data.iter()
         .map(|x| (x - mean).abs())
         .map(|x| x * (x + 1) / 2)
-        .fold(0, |acc, x| acc + x)
+        .sum()
 }
 
 fn main() {

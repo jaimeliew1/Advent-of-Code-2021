@@ -8,7 +8,7 @@ fn int_vec_to_binary(input: &Vec<u32>) -> u32 {
         .rev()
         .enumerate()
         .map(|(i, x)| x * 2_u32.pow(i as u32))
-        .fold(0, |acc, x| acc + x)
+        .sum()
 }
 
 fn parse_input(filename: &str) -> Vec<Vec<u32>> {
@@ -33,7 +33,7 @@ fn part1(data: &Vec<Vec<u32>>) -> u32 {
             x if x > 500 => 2_u32.pow(i as u32),
             _ => 0,
         })
-        .fold(0, |acc, x| acc + x);
+        .sum();
 
     let epsilon: u32 = 2_u32.pow(12) - 1 - gamma;
 

@@ -78,7 +78,7 @@ fn identify(input: &Vec<String>) -> HashMap<String, u32> {
         .map(|s| {
             s.chars()
                 .map(|c| frequency.get(&c).unwrap())
-                .fold(0, |acc, x| acc + x)
+                .sum()
         })
         .collect();
 

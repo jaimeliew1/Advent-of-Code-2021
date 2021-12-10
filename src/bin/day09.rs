@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use std::collections::HashSet;
 use std::fs;
@@ -37,17 +38,15 @@ fn get_low_points(data: &Vec<Vec<u32>>) -> Vec<(i32, i32)> {
     low_points
 }
 fn part1(data: &Vec<Vec<u32>>) -> u32 {
-    let low_points = get_low_points(&data);
-    
-    low_points
+    get_low_points(&data)
         .iter()
-        .map(|&(x, y)| data[x as usize][y as usize])
-        .fold(0, |acc, val| acc + val + 1)
+        .map(|&(x, y)| data[x as usize][y as usize] + 1)
+        .sum()
 }
 
 fn part2(data: &Vec<Vec<u32>>) -> u32 {
     let low_points = get_low_points(&data);
-    
+
     let mut sizes: Vec<u32> = Vec::new();
     for (low_x, low_y) in low_points {
         let mut basin_points: HashSet<(i32, i32)> = vec![(low_x, low_y)].into_iter().collect();
@@ -64,9 +63,7 @@ fn part2(data: &Vec<Vec<u32>>) -> u32 {
         }
         sizes.push(basin_points.len() as u32);
     }
-    sizes.sort();
-    sizes.reverse();
-    sizes[0] * sizes[1] * sizes[2]
+    sizes.iter().sorted().rev().take(3).product()
 }
 
 fn main() {

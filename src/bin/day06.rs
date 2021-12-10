@@ -1,46 +1,32 @@
-use std::collections::HashMap;
 use std::fs;
 
 fn parse_input(filename: &str) -> Vec<u64> {
     let contents = fs::read_to_string(filename).expect("can't find file");
     let data: Vec<u64> = contents.split(",").map(|s| s.parse().unwrap()).collect();
-    data
-}
-
-fn simulate(mut fishes: Vec<u64>, days: usize) -> Vec<u64> {
-    // simulate lanternfishes of given ages for number of days.
-    for day in 0..days {
-        let n_new_fishes = fishes.iter().filter(|&&f| f == 0).count();
-        (0..n_new_fishes).for_each(|_| fishes.push(9));
-        fishes = fishes
-            .iter()
-            .map(|&f| match f {
-                0 => 6,
-                x => x - 1,
-            })
-            .collect();
-    }
+    let mut fishes: Vec<u64> = vec![0; 9];
+    data.iter().for_each(|&f| fishes[f as usize] += 1);
     fishes
 }
 
-fn part1(data: &Vec<u64>) -> u64 {
-    let mut count_lookup = HashMap::new();
-    for age in 0..8 {
-        count_lookup.insert(age, simulate(vec![age], 80).iter().count());
+fn simulate(fishes: &Vec<u64>, days: usize) -> Vec<u64> {
+    // simulate lanternfishes of given ages for number of days.
+    let mut fishes = fishes.clone();
+    for _day in 0..days {
+        let new_fishes = fishes[0];
+        fishes = fishes[1..].to_vec();
+        fishes.push(new_fishes);
+        fishes[6] += new_fishes;
     }
-    data.iter()
-        .fold(0, |acc, f| acc + *count_lookup.get(f).unwrap() as u64)
+
+    fishes
 }
 
-fn part2(data: &Vec<u64>) -> u64 {
-    let mut count_lookup = HashMap::new();
-    for age in 0..9 {
-        count_lookup.insert(age, simulate(vec![age], 156).iter().count());
-    }
-    let fishes_inter = simulate(data.to_vec(), 100);
-    fishes_inter
-        .iter()
-        .fold(0, |acc, f| acc + *count_lookup.get(f).unwrap() as u64)
+fn part1(fishes: &Vec<u64>) -> u64 {
+    simulate(fishes, 80).iter().sum()
+}
+
+fn part2(fishes: &Vec<u64>) -> u64 {
+    simulate(fishes, 256).iter().sum()
 }
 
 fn main() {
