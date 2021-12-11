@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::fs;
@@ -40,28 +41,28 @@ fn process_bracket_string(input: &String) -> LineState {
     return LineState::Incomplete(expected.into_iter().rev().collect());
 }
 
-fn part1(data: &Vec<String>) -> u64 {
-    let mut score: u64 = 0;
-    for line in data {
-        if let LineState::Corrupt(c) = process_bracket_string(line) {
-            score += SCORES1.get(&c).unwrap()
-        }
-    }
-    score
+fn part1(data: &Vec<LineState>) -> u64 {
+    data.iter()
+        .filter_map(|l| match l {
+            LineState::Corrupt(c) => Some(SCORES1.get(&c).unwrap()),
+            _ => None,
+        })
+        .sum()
 }
 
-fn part2(data: &Vec<String>) -> u64 {
-    let mut scores: Vec<u64> = Vec::new();
-    for line in data {
-        if let LineState::Incomplete(expected) = process_bracket_string(line) {
-            scores.push(
-                expected
-                    .iter()
+fn part2(data: &Vec<LineState>) -> u64 {
+    let scores: Vec<u64> = data
+        .iter()
+        .filter_map(|l| match l {
+            LineState::Incomplete(v) => Some(
+                v.iter()
                     .fold(0, |acc, &x| acc * 5 + SCORES2.get(x).unwrap()),
-            )
-        }
-    }
-    scores.sort();
+            ),
+            _ => None,
+        })
+        .sorted()
+        .collect();
+
     let mid = scores.len() / 2;
     scores[mid]
 }
@@ -70,11 +71,12 @@ fn main() {
     let now = std::time::Instant::now();
 
     let data = parse_input("input/day10.txt");
+    let linestates: Vec<LineState> = data.iter().map(|l| process_bracket_string(l)).collect();
 
-    let ans_part1 = part1(&data);
+    let ans_part1 = part1(&linestates);
     println!("part1: {}", ans_part1);
 
-    let ans_part2 = part2(&data);
+    let ans_part2 = part2(&linestates);
     println!("part2: {}", ans_part2);
 
     let time = now.elapsed().as_micros();

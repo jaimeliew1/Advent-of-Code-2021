@@ -12,10 +12,8 @@ fn simulate(fishes: &Vec<u64>, days: usize) -> Vec<u64> {
     // simulate lanternfishes of given ages for number of days.
     let mut fishes = fishes.clone();
     for _day in 0..days {
-        let new_fishes = fishes[0];
-        fishes = fishes[1..].to_vec();
-        fishes.push(new_fishes);
-        fishes[6] += new_fishes;
+        fishes.rotate_left(1);
+        fishes[6] += fishes[8];
     }
 
     fishes

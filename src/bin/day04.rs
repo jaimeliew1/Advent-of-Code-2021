@@ -1,5 +1,5 @@
+use itertools::Itertools;
 use std::fs;
-
 #[derive(Debug, Clone, Copy)]
 struct BingoCard([[u64; 5]; 5]);
 
@@ -62,61 +62,34 @@ fn parse_input(filename: &str) -> (Vec<u64>, Vec<BingoCard>) {
     (ans1, ans2)
 }
 
-fn part1(draws: &Vec<u64>, cards: &Vec<BingoCard>) -> u64 {
-    let mut niter_lowest: usize = 999;
-    let mut ans_best: u64 = 0;
-    for card in cards.iter() {
-        let mut list: Vec<(usize, usize)> = Vec::new();
+fn solve(draws: &Vec<u64>, card: &BingoCard) -> (usize, u64) {
+    let mut list: Vec<(usize, usize)> = Vec::new();
 
-        for (i, draw) in draws.iter().enumerate() {
-            if let Some((x, y)) = card.get_pos(draw) {
-                list.push((x, y));
-            }
-            if let Some(solution) = card.solved(&list) {
-                if i < niter_lowest {
-                    niter_lowest = i;
-                    ans_best = solution * draw;
-                }
-                break;
-            }
+    for (i, draw) in draws.iter().enumerate() {
+        if let Some((x, y)) = card.get_pos(draw) {
+            list.push((x, y));
+        }
+        if let Some(solution) = card.solved(&list) {
+            return (i, solution * draw);
         }
     }
-
-    ans_best
-}
-
-fn part2(draws: &Vec<u64>, cards: &Vec<BingoCard>) -> u64 {
-    let mut niter_highest: usize = 0;
-    let mut ans_best: u64 = 0;
-    for card in cards.iter() {
-        let mut list: Vec<(usize, usize)> = Vec::new();
-
-        for (i, draw) in draws.iter().enumerate() {
-            if let Some((x, y)) = card.get_pos(draw) {
-                list.push((x, y));
-            }
-            if let Some(solution) = card.solved(&list) {
-                if i > niter_highest {
-                    niter_highest = i;
-                    ans_best = solution * draw;
-                }
-                break;
-            }
-        }
-    }
-
-    ans_best
+    unreachable!()
 }
 
 fn main() {
     let now = std::time::Instant::now();
 
     let (draws, cards) = parse_input("input/day04.txt");
+    let scores: Vec<(usize, u64)> = cards
+        .iter()
+        .map(|c| solve(&draws, c))
+        .sorted_by_key(|(niter, _score)| *niter)
+        .collect();
 
-    let ans_part1 = part1(&draws, &cards);
+    let ans_part1 = scores[0].1;
     println!("part1: {}", ans_part1);
 
-    let ans_part2 = part2(&draws, &cards);
+    let ans_part2 = scores.last().unwrap().1;
     println!("part2: {}", ans_part2);
 
     let time = now.elapsed().as_micros();
