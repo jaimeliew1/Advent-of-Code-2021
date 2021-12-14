@@ -1,61 +1,52 @@
+use itertools::Itertools;
 use std::collections::HashMap;
 use std::fs;
-use itertools::Itertools;
 
-fn parse_input(filename: &str) -> (String, HashMap<String, (String, String)>) {
+fn parse_input(filename: &str) -> (String, HashMap<(char, char), char>) {
     let content = fs::read_to_string(filename).expect("can't find file");
     let (raw1, raw2) = content.split_once("\n\n").unwrap();
 
     let mut lookup = HashMap::new();
     for line in raw2.lines() {
         let (input, output) = line.split_once(" -> ").unwrap();
-        let (mut out1, mut out2) = (input[0..1].to_owned(), output[0..1].to_owned());
-        out1.push_str(output);
-        out2.push_str(&input[1..2]);
-        lookup.insert(input.to_owned(), (out1, out2));
+        lookup.insert(
+            (input.as_bytes()[0] as char, input.as_bytes()[1] as char),
+            output.as_bytes()[0] as char,
+        );
     }
     (raw1.to_owned(), lookup)
 }
 
-fn polymer_count(input: &str, niter: usize, lookup: &HashMap<String, (String, String)>) -> u64 {
-    let mut polymer = compress_polymer(input);
-    for _ in 0..niter {
-        polymer = step(&polymer, &lookup);
-    }
+fn polymer_count(input: &str, niter: usize, lookup: &HashMap<(char, char), char>) -> u64 {
+    let compressed_input: HashMap<(char, char), usize> =
+        input.chars().into_iter().tuple_windows().counts();
+    let polymer = (0..niter).fold(compressed_input, |acc, _| step(&acc, &lookup));
 
     let mut count = HashMap::new();
-    for (key, val) in polymer.iter() {
-        key.chars()
-            .for_each(|c| *count.entry(c).or_insert(0) += val);
+    for ((a, b), val) in polymer.iter() {
+        *count.entry(*a).or_insert(0) += val;
+        *count.entry(*b).or_insert(0) += val;
     }
 
     // correct for boundary condition.
     *count.entry(input.chars().next().unwrap()).or_insert(0) += 1;
     *count.entry(input.chars().last().unwrap()).or_insert(0) += 1;
 
-    (count.values().max().unwrap() - count.values().min().unwrap()) / 2
-}
-
-fn compress_polymer(input: &str) -> HashMap<String, u64> {
-    input
-        .chars()
-        .collect_vec()
-        .windows(2)
-        .map(|w| (w.into_iter().collect(), 1))
-        .collect()
+    let (min, max) = count.values().minmax().into_option().unwrap();
+    ((max - min) / 2) as u64
 }
 
 fn step(
-    input: &HashMap<String, u64>,
-    lookup: &HashMap<String, (String, String)>,
-) -> HashMap<String, u64> {
+    input: &HashMap<(char, char), usize>,
+    lookup: &HashMap<(char, char), char>,
+) -> HashMap<(char, char), usize> {
     let mut out = input.clone();
-    for (key, val) in input.iter() {
+    for ((a, b), val) in input.iter() {
         let val = *val;
-        let (a, b) = lookup.get(key).unwrap();
-        *out.get_mut(key).unwrap() -= val;
-        *out.entry(a.to_string()).or_insert(0) += val;
-        *out.entry(b.to_string()).or_insert(0) += val;
+        let c = lookup.get(&(*a, *b)).unwrap();
+        *out.get_mut(&(*a, *b)).unwrap() -= val;
+        *out.entry((*a, *c)).or_insert(0) += val;
+        *out.entry((*c, *b)).or_insert(0) += val;
     }
     out
 }
