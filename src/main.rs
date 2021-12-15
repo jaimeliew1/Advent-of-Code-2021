@@ -4,7 +4,7 @@ fn main() {
     for i in 1..=25 {
         let day = format!("day{:0>2}", i);
         let cmd = Command::new("cargo")
-            .args(&["run", "--bin", &day])
+            .args(&["run", "--release", "--bin", &day])
             .output()
             .unwrap();
 
