@@ -47,8 +47,7 @@ fn count_activated_cubes(data: &Vec<(bool, Vec<i64>)>) -> u64 {
         .collect();
     let mut count: u64 = 0;
 
-    for (i, (x, xx)) in xs.iter().tuple_windows().enumerate() {
-        // println!("{}/{}", i, xs.len());
+    for (x, xx) in xs.iter().tuple_windows() {
         let candids: Vec<&(bool, Vec<i64>)> = data
             .iter()
             .filter(|(_, c)| (x >= &c[0]) & (x <= &c[1]))
@@ -88,7 +87,6 @@ fn main() {
     let ans_part1 = count_activated_cubes(&startup_data);
     println!("part1: {}", ans_part1);
 
-    println!("This will take a couple of minutes...");
     let ans_part2 = count_activated_cubes(&data);
     println!("part2: {}", ans_part2);
 
